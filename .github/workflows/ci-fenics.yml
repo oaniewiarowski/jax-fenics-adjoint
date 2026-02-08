@@ -74,6 +74,7 @@ jobs:
 
       - name: Send coveralls
         shell: bash -l {0}
+        if: ${{ secrets.COVERALLS_REPO_TOKEN != '' }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
