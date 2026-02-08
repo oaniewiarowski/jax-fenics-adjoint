@@ -2,7 +2,7 @@
 # http://www.dolfin-adjoint.org/en/latest/documentation/stokes-topology/stokes-topology.html
 
 import jax
-from jax.config import config
+from jax import config
 
 import jax.numpy as np
 import numpy as onp

@@ -8,7 +8,7 @@ r""" Solves a optimal control problem constrained by the Poisson equation:
 """
 
 import jax
-from jax.config import config
+from jax import config
 
 import jax.numpy as np
 import numpy as onp

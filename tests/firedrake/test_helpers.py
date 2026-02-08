@@ -6,7 +6,7 @@ import numpy
 from jaxfenics_adjoint import from_jax
 
 import jax
-from jax.config import config
+from jax import config
 from jax.core import ShapedArray, get_aval
 from jax._src import ad_util
 import jax.numpy
