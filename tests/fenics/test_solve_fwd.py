@@ -2,7 +2,7 @@ from pytest_check import check
 import pytest
 import fdm
 import jax
-from jax.config import config
+from jax import config
 import jax.numpy as np
 
 import fenics

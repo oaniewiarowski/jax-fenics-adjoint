@@ -6,12 +6,20 @@ import numpy
 from jaxfenics_adjoint import from_jax
 
 import jax
-from jax.config import config
-from jax.core import ShapedArray, get_aval
+from jax import config
+from jax.core import ShapedArray
+import jax.core as jax_core
 from jax._src import ad_util
 import jax.numpy
 
 config.update("jax_enable_x64", True)
+
+
+def _get_aval(value):
+    get_aval = getattr(jax_core, "get_aval", None)
+    if get_aval is None:
+        get_aval = jax._src.core.get_aval
+    return get_aval(value)
 
 
 @pytest.mark.parametrize(
@@ -25,12 +33,12 @@ config.update("jax_enable_x64", True)
             ShapedArray(jax.numpy.ones(2).shape, jax.numpy.ones(2).dtype),
             firedrake.Constant([0.0, 0.0]),
         ),
-        (get_aval(jax.numpy.asarray(0.66)), firedrake.Constant(0.66)),
+        (_get_aval(jax.numpy.asarray(0.66)), firedrake.Constant(0.66)),
         (
-            get_aval(jax.numpy.asarray([0.5, 0.66])),
+            _get_aval(jax.numpy.asarray([0.5, 0.66])),
             firedrake.Constant([0.5, 0.66]),
         ),
-        (ad_util.Zero(get_aval(jax.numpy.asarray(0.0))), firedrake.Constant(0.0)),
+        (ad_util.Zero(_get_aval(jax.numpy.asarray(0.0))), firedrake.Constant(0.0)),
     ],
 )
 def test_from_jax_constant(test_input, expected):
@@ -51,10 +59,10 @@ def _x0(mesh):
             lambda mesh: firedrake.Constant(0.0),
         ),
         (
-            ad_util.Zero(get_aval(jax.numpy.asarray(0.0))),
+            ad_util.Zero(_get_aval(jax.numpy.asarray(0.0))),
             lambda mesh: firedrake.Constant(0.0),
         ),
-        (get_aval(jax.numpy.linspace(0.05, 0.95, num=10)), _x0),
+        (_get_aval(jax.numpy.linspace(0.05, 0.95, num=10)), _x0),
     ],
 )
 def test_from_jax_function(test_input, expected_expr):

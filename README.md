@@ -17,7 +17,7 @@ on 2D square domain and calculating the solution Jacobian matrix (_du/df_) using
 ```python
 import jax
 import jax.numpy as np
-from jax.config import config
+from jax import config
 config.update("jax_enable_x64", True)
 
 import fenics

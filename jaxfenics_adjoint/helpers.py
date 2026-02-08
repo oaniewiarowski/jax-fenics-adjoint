@@ -16,6 +16,20 @@ BackendVariable = fecr._backends.BackendVariable
 JAXArray = Union[jax.numpy.array, np.array]
 
 
+def _get_aval(value):
+    get_aval = getattr(jax_core, "get_aval", None)
+    if get_aval is None:
+        get_aval = jax._src.core.get_aval
+    return get_aval(value)
+
+
+def _get_concrete_array_type():
+    concrete_array = getattr(jax_core, "ConcreteArray", None)
+    if concrete_array is None:
+        concrete_array = getattr(jax._src.core, "ConcreteArray", None)
+    return concrete_array
+
+
 def jax_to_fenics_numpy(jax_array: JAXArray, fem_variable: BackendVariable) -> np.array:
     """Convert JAX symbolic variables to concrete NumPy array compatible with FEniCS/Firedrake"""
 
@@ -31,11 +45,11 @@ def jax_to_fenics_numpy(jax_array: JAXArray, fem_variable: BackendVariable) -> n
             return numpy_array
 
     elif isinstance(jax_array, (jax_core.Tracer,)):
-        numpy_array = jax_core.get_aval(jax_array)
+        numpy_array = _get_aval(jax_array)
         return numpy_array
 
     elif isinstance(jax_array, (ShapedArray,)):
-        concrete_array = getattr(jax_core, "ConcreteArray", None)
+        concrete_array = _get_concrete_array_type()
         if concrete_array is not None and isinstance(jax_array, concrete_array):
             numpy_array = jax_array.val
             return numpy_array
