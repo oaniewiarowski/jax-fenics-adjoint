@@ -13,7 +13,19 @@ from typing import Type, List, Union, Iterable, Callable, Tuple
 
 # Union[fenics.Constant, fenics.Function, firedrake.Constant, firedrake.Function, pyadjoint.AdjFloat]
 BackendVariable = fecr._backends.BackendVariable
-JAXArray = Union[jax.numpy.array, np.array]
+JAXArray = Union[jax.Array, jax.numpy.array, np.array]
+
+
+def _abstract_to_numpy(aval: object) -> np.array:
+    concrete_array = getattr(jax_core, "ConcreteArray", None)
+    if concrete_array is not None and isinstance(aval, concrete_array):
+        return aval.val
+
+    if hasattr(aval, "shape"):
+        dtype = getattr(aval, "dtype", None)
+        return np.zeros(aval.shape, dtype=dtype)
+
+    return np.asarray(aval)
 
 
 def jax_to_fenics_numpy(jax_array: JAXArray, fem_variable: BackendVariable) -> np.array:
@@ -31,19 +43,19 @@ def jax_to_fenics_numpy(jax_array: JAXArray, fem_variable: BackendVariable) -> n
             return numpy_array
 
     elif isinstance(jax_array, (jax_core.Tracer,)):
-        numpy_array = jax_core.get_aval(jax_array)
-        return numpy_array
+        aval = jax_core.get_aval(jax_array)
+        return _abstract_to_numpy(aval)
 
-    elif isinstance(jax_array, (ShapedArray,)):
-        concrete_array = getattr(jax_core, "ConcreteArray", None)
-        if concrete_array is not None and isinstance(jax_array, concrete_array):
-            numpy_array = jax_array.val
-            return numpy_array
+    shape_dtype_struct = getattr(jax, "ShapeDtypeStruct", None)
+    abstract_types = (ShapedArray,)
+    if shape_dtype_struct is not None:
+        abstract_types = abstract_types + (shape_dtype_struct,)
+
+    if isinstance(jax_array, abstract_types):
         warnings.warn(
             "Got JAX tracer type to convert to FEniCS/Firedrake. Returning zero."
         )
-        numpy_array = np.zeros(jax_array.shape)
-        return numpy_array
+        return _abstract_to_numpy(jax_array)
 
     else:
         numpy_array = np.asarray(jax_array)
