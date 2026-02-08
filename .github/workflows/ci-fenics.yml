@@ -12,15 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: 3.8
+          python-version: 3.9
           mamba-version: "*"
           channels: conda-forge,defaults
           channel-priority: true
@@ -36,7 +36,7 @@ jobs:
         run: |
           conda config --set always_yes yes
           conda config --add channels conda-forge
-          mamba create -n fenicsproject -c conda-forge fenics
+          mamba create -n fenicsproject -c conda-forge python=3.9 fenics=2019.1.0
           conda activate fenicsproject
           which python
           python -c "from dolfin import *"
@@ -46,14 +46,14 @@ jobs:
         run: |
           conda activate fenicsproject
           python -m pip install --upgrade pip
-          python -m pip install git+https://github.com/dolfin-adjoint/pyadjoint.git@master
+          python -m pip install "pyadjoint==2019.1.0"
           python -m pip install git+https://github.com/IvanYashchuk/fecr@master
           python -m pip install pytest
           python -m pip install pytest-cov
           python -m pip install pytest-check
           python -m pip install coveralls
           python -m pip install fdm
-          python -m pip install --upgrade jax jaxlib
+          python -m pip install --upgrade "jax[cpu]"
 
       - name: Install JAX-FEniCS
         shell: bash -l {0}
@@ -74,6 +74,7 @@ jobs:
 
       - name: Send coveralls
         shell: bash -l {0}
+        if: ${{ secrets.COVERALLS_REPO_TOKEN != '' }}
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
