@@ -6,7 +6,7 @@ from jax import config
 import jax.numpy as np
 
 import fenics
-import fenics_adjoint as fa
+fa = pytest.importorskip("fenics_adjoint")
 import ufl
 
 from jaxfenics_adjoint import build_jax_fem_eval_fwd

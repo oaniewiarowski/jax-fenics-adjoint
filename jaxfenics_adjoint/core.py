@@ -2,7 +2,10 @@ import jax
 import jax.numpy as np
 from jax._src import ad_util
 
-from jax.core import Primitive
+try:
+    from jax.core import Primitive
+except ImportError:  # pragma: no cover - fallback for newer JAX
+    from jax._src.core import Primitive
 from jax.custom_derivatives import custom_vjp
 
 import dataclasses
