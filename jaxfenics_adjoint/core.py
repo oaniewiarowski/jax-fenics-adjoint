@@ -2,7 +2,10 @@ import jax
 import jax.numpy as np
 from jax._src import ad_util
 
-from jax.core import Primitive
+try:
+    from jax.core import Primitive
+except ImportError:  # pragma: no cover - fallback for newer JAX
+    from jax._src.core import Primitive
 from jax.custom_derivatives import custom_vjp
 
 import dataclasses
@@ -16,6 +19,11 @@ from .helpers import BackendVariable
 from .helpers import jax_to_fenics_numpy
 
 from typing import Collection, Callable, Tuple
+
+
+def _as_shaped_array(value):
+    value = np.asarray(value)
+    return jax.core.ShapedArray(value.shape, value.dtype)
 
 
 @dataclasses.dataclass
@@ -84,11 +92,11 @@ def get_pullback_function(
         _, args = aux_args
         if len(args) > 1:
             return tuple(
-                (jax.abstract_arrays.ShapedArray(arg.shape, arg.dtype) for arg in args)
+                (jax.core.ShapedArray(arg.shape, arg.dtype) for arg in args)
             )
         else:
             return (
-                jax.abstract_arrays.ShapedArray((1, *args[0].shape), args[0].dtype),
+                jax.core.ShapedArray((1, *args[0].shape), args[0].dtype),
             )
 
     vjp_fun1_p.def_abstract_eval(vjp_fun1_abstract_eval)
@@ -151,7 +159,7 @@ def build_jax_fem_eval(fenics_templates: BackendVariable) -> Callable:
         )
 
         jax_fem_eval_p.def_abstract_eval(
-            lambda *args: jax.abstract_arrays.make_shaped_array(
+            lambda *args: _as_shaped_array(
                 evaluate_primal(fenics_function, fenics_templates, *args)[0]
             )
         )
@@ -225,9 +233,8 @@ def build_jax_fem_eval_fwd(fenics_templates: BackendVariable) -> Callable:
             args = (
                 jax_to_fenics_numpy(arg, ft) for arg, ft in zip(args, fenics_templates)
             )
-            return jax.abstract_arrays.make_shaped_array(
-                evaluate_primal(fenics_function, fenics_templates, *args)[0]
-            )
+            output = evaluate_primal(fenics_function, fenics_templates, *args)[0]
+            return _as_shaped_array(output)
 
         jax_fem_eval_p.def_abstract_eval(jax_fem_eval_p_abstract_eval)
 
