@@ -14,5 +14,10 @@ setup(
     author="Ivan Yashchuk",
     license="MIT",
     packages=["jaxfenics_adjoint"],
-    install_requires=["jax", "fdm", "fecr"],
+    install_requires=[
+        "jax>=0.4.0",
+        "fdm",
+        "fecr",
+        "pyadjoint==2019.1.0",
+    ],
 )
