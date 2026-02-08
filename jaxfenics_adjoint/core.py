@@ -45,6 +45,13 @@ jax.tree_util.register_pytree_node(
 )
 
 
+def _get_aval(value):
+    get_aval = getattr(jax.core, "get_aval", None)
+    if get_aval is None:
+        get_aval = jax._src.core.get_aval
+    return get_aval(value)
+
+
 def get_pullback_function(
     fenics_function: Callable, fenics_templates: Collection[BackendVariable]
 ) -> Callable:
@@ -149,7 +156,7 @@ def build_jax_fem_eval(fenics_templates: BackendVariable) -> Callable:
         )
 
         jax_fem_eval_p.def_abstract_eval(
-            lambda *args: jax.core.get_aval(
+            lambda *args: _get_aval(
                 evaluate_primal(fenics_function, fenics_templates, *args)[0]
             )
         )
@@ -223,7 +230,7 @@ def build_jax_fem_eval_fwd(fenics_templates: BackendVariable) -> Callable:
             args = (
                 jax_to_fenics_numpy(arg, ft) for arg, ft in zip(args, fenics_templates)
             )
-            return jax.core.get_aval(
+            return _get_aval(
                 evaluate_primal(fenics_function, fenics_templates, *args)[0]
             )
 

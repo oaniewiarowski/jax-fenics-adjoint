@@ -168,10 +168,11 @@ dependencies:
     - dolfin-adjoint==2019.1.0
     - fdm==0.2.0
     - fenics==2019.1.0
+    - pyadjoint==2019.1.0
     - flake8==3.7.9
     - idna==2.9
-    - jax==0.1.59
-    - jaxlib==0.1.39
+    - jax==0.4.25
+    - jaxlib==0.4.25
     - mccabe==0.6.1
     - more-itertools==8.2.0
     - opt-einsum==3.2.0
