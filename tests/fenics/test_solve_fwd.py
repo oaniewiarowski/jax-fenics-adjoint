@@ -2,7 +2,6 @@ from pytest_check import check
 import pytest
 import fdm
 import jax
-from jax.config import config
 import jax.numpy as np
 
 import fenics
@@ -11,7 +10,7 @@ import ufl
 
 from jaxfenics_adjoint import build_jax_fem_eval_fwd
 
-config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 fenics.parameters["std_out_all_processes"] = False
 fenics.set_log_level(fenics.LogLevel.ERROR)
 

@@ -1,6 +1,5 @@
 from pytest_check import check
 import jax
-from jax.config import config
 import jax.numpy as np
 import numpy as onp
 
@@ -12,7 +11,7 @@ import fdm
 
 from jaxfenics_adjoint import build_jax_fem_eval
 
-config.update("jax_enable_x64", True)
+jax.config.update("jax_enable_x64", True)
 
 mesh = fa.UnitSquareMesh(3, 2)
 V = fenics.FunctionSpace(mesh, "P", 1)
